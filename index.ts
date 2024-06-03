@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import apiRouter from "./routes/api";
 
 dotenv.config();
 
@@ -11,9 +12,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello World From the Typescript Server!");
 });
-app.get("/api", (req, res) => {
-  res.send("Hello World From the API!");
-});
+
+app.use("/api", apiRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
