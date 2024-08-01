@@ -4,21 +4,61 @@ enum PollStatus {
   Closed = 3,
 }
 
+interface VoterConstructor {
+  poll: Poll;
+  name: string;
+}
+
+interface PollConstructor {
+  title: string;
+  question: string;
+  optionsPerVoter: number;
+  minutesForJoining: number;
+  minutesForVoting: number;
+}
+
 class Voter {
-  constructor() {
-    this.options = [];
+  constructor(voter: VoterConstructor) {
+    this.poll = voter.poll;
+    this.addedOptions = [];
+    this.prefferences = [];
+    this.name = voter.name;
+    this.voted = false;
   }
-  options: string[];
+  poll: Poll;
+  name: string;
+  addedOptions: string[];
+  prefferences: number[];
+  voted: boolean;
+  addOption(option: string): boolean {
+    if (this.poll.status !== PollStatus.CreatingOptions) return false;
+    if (this.addedOptions.length >= this.poll.optionsPerVoter) return false;
+    if (this.poll.options.includes(option)) return false;
+    this.addedOptions.push(option);
+    return true;
+  }
+  vote(prefferences: number[]): boolean {
+    if (this.poll.status !== PollStatus.Voting) return false;
+    if (this.voted) return false;
+    if (prefferences.length !== this.poll.options.length) return false;
+    const sorted = prefferences.slice().sort();
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i] !== i) return false;
+    }
+    this.prefferences = prefferences;
+    this.voted = true;
+    return true;
+  }
 }
 
 class Poll {
-  constructor() {
-    this.title = "";
-    this.question = "";
+  constructor(poll: PollConstructor) {
+    this.title = poll.title;
+    this.question = poll.question;
     this.status = PollStatus.CreatingOptions;
-    this.optionsPerVoter = 1;
-    this.minutesForJoining = 3;
-    this.minutesForVoting = 3;
+    this.optionsPerVoter = poll.optionsPerVoter;
+    this.minutesForJoining = poll.minutesForJoining;
+    this.minutesForVoting = poll.minutesForVoting;
     this.createdAt = new Date();
     this.voters = [];
   }
@@ -33,24 +73,32 @@ class Poll {
   get options(): string[] {
     const options = [];
     for (const voter of this.voters) {
-      options.push(...voter.options);
+      options.push(...voter.addedOptions);
     }
     return options;
   }
-  createVoter() {
-    //
+  createVoter(voterConstructor: VoterConstructor): number {
+    for (const voter of this.voters) {
+      if (voter.name === voterConstructor.name) return -1;
+    }
+    const newVoter = new Voter(voterConstructor);
+    const newLength = this.voters.push(newVoter);
+    return newLength - 1;
   }
-  startVotingPhase() {
-    //
+  getVoter(id: number): Voter {
+    return this.voters[id];
   }
-  close() {
-    //
+  startVoting() {
+    this.status = PollStatus.Voting;
+  }
+  closeVoting() {
+    this.status = PollStatus.Closed;
   }
   start() {
     setTimeout(() => {
-      this.startVotingPhase();
+      this.startVoting();
       setTimeout(() => {
-        this.close();
+        this.closeVoting();
       }, this.minutesForVoting * 60 * 1000);
     }, this.minutesForJoining * 60 * 1000);
   }
@@ -61,10 +109,12 @@ class PollManager {
     this.polls = {};
   }
   polls: { [key: number]: Poll };
-  createPoll() {
-    //
+  createPoll(poll: PollConstructor): number {
+    const id = Object.keys(this.polls).length;
+    this.polls[id] = new Poll(poll);
+    return id;
   }
-  getPoll(id: number) {
+  getPoll(id: number): Poll {
     return this.polls[id];
   }
 }
