@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Poll, PollConstructor } from "../src/class/PollManager";
 import pollManager from "../src/poll-manager";
+import { Poll, PollConstructor } from "../src/class/Poll";
 
 function isValidPollConstructor(payload: PollConstructor): boolean {
   if (typeof payload !== "object") return false;
