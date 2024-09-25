@@ -5,12 +5,12 @@ enum PollStatus {
   Closed = 3,
 }
 
-interface VoterConstructor {
+export interface VoterConstructor {
   poll: Poll;
   name: string;
 }
 
-interface PollConstructor {
+export interface PollConstructor {
   title: string;
   question: string;
   optionsPerVoter: number;
@@ -18,7 +18,7 @@ interface PollConstructor {
   minutesForVoting: number;
 }
 
-class Voter {
+export class Voter {
   constructor(voter: VoterConstructor) {
     this.poll = voter.poll;
     this.addedOptions = [];
@@ -52,7 +52,7 @@ class Voter {
   }
 }
 
-class Poll {
+export class Poll {
   constructor(poll: PollConstructor) {
     this.title = poll.title;
     this.question = poll.question;
@@ -119,7 +119,8 @@ class PollManager {
     this.polls[id] = new Poll(poll);
     return id;
   }
-  getPoll(id: number): Poll {
+  getPoll(id: number): Poll | null {
+    if (!this.polls[id]) return null;
     return this.polls[id];
   }
 }

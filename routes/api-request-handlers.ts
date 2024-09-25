@@ -1,11 +1,57 @@
 import { Request, Response } from "express";
+import { Poll, PollConstructor } from "../src/class/PollManager";
+import pollManager from "../src/poll-manager";
 
-export function readPoll(req: Request, res: Response) {
-  return { message: `Reading poll ${req.params.pollId}` };
+function isValidPollConstructor(payload: PollConstructor): boolean {
+  if (typeof payload !== "object") return false;
+  const {
+    title,
+    question,
+    optionsPerVoter,
+    minutesForJoining,
+    minutesForVoting,
+  } = payload;
+  if (typeof title !== "string" || title.length === 0 || title.length > 60)
+    return false;
+  if (
+    typeof question !== "string" ||
+    question.length === 0 ||
+    question.length > 60
+  )
+    return false;
+  if (
+    typeof optionsPerVoter !== "number" ||
+    optionsPerVoter < 1 ||
+    optionsPerVoter > 5
+  )
+    return false;
+  if (
+    typeof minutesForJoining !== "number" ||
+    minutesForJoining < 1 ||
+    minutesForJoining > 10
+  )
+    return false;
+  if (
+    typeof minutesForVoting !== "number" ||
+    minutesForVoting < 1 ||
+    minutesForVoting > 10
+  )
+    return false;
+  return true;
 }
 
-export function createPoll(req: Request, res: Response) {
-  return { message: "Creating a new poll" };
+export function readPoll(req: Request, res: Response): Poll | null {
+  const pollId = parseInt(req.params.pollId);
+  if (isNaN(pollId)) return null;
+  const poll = pollManager.getPoll(pollId);
+  return poll;
+}
+
+export function createPoll(req: Request, res: Response): number {
+  const payload = req.body as PollConstructor;
+  if (!isValidPollConstructor(payload)) return 0;
+  const createdPollId = pollManager.createPoll(payload);
+  return createdPollId;
 }
 
 export function createVoter(req: Request, res: Response) {

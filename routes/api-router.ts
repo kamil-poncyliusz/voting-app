@@ -12,6 +12,7 @@ const apiRouter = express.Router();
 
 apiRouter.get("/poll/:pollId", (req, res) => {
   const response = readPoll(req, res);
+  if (!response) return res.status(404).json({ message: "Poll not found" });
   return res.json(response);
 });
 apiRouter.post("/poll", (req, res) => {
