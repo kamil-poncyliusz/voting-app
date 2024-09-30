@@ -1,3 +1,4 @@
+import { deleteOption } from "../../routes/api-request-handlers";
 import { Poll, PollStatus } from "./Poll";
 
 export interface VoterConstructor {
@@ -23,6 +24,13 @@ export class Voter {
     if (this.addedOptions.length >= this.poll.optionsPerVoter) return false;
     if (this.poll.options.includes(option)) return false;
     this.addedOptions.push(option);
+    return true;
+  }
+  deleteOption(option: string): boolean {
+    if (this.poll.status !== PollStatus.CreatingOptions) return false;
+    const index = this.addedOptions.indexOf(option);
+    if (index === -1) return false;
+    this.addedOptions.splice(index, 1);
     return true;
   }
   vote(prefferences: number[]): boolean {

@@ -41,6 +41,19 @@ export class Poll {
     }
     return options;
   }
+  get info() {
+    return {
+      title: this.title,
+      question: this.question,
+      status: PollStatus[this.status],
+      optionsPerVoter: this.optionsPerVoter,
+      minutesForJoining: this.minutesForJoining,
+      minutesForVoting: this.minutesForVoting,
+      createdAt: this.createdAt,
+      voters: this.voters.map((voter) => voter.name),
+      options: this.options,
+    };
+  }
   createVoter(voterConstructor: VoterConstructor): number {
     for (const voter of this.voters) {
       if (voter.name === voterConstructor.name) return -1;
@@ -49,7 +62,8 @@ export class Poll {
     const newLength = this.voters.push(newVoter);
     return newLength - 1;
   }
-  getVoter(id: number): Voter {
+  getVoter(id: number): Voter | null {
+    if (!this.voters[id]) return null;
     return this.voters[id];
   }
   startCreatingOptions() {
